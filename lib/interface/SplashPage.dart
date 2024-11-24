@@ -3,7 +3,6 @@ import 'package:entry/entry.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:memovida/interface/HomePage.dart';
-import 'package:memovida/main.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});

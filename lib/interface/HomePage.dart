@@ -1,17 +1,13 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:memovida/interface/CadastroMedicamentoPage.dart';
 import 'package:memovida/interface/EmergenciaPage.dart';
 import 'package:memovida/interface/FarmaciasPage.dart';
 import 'package:memovida/main.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:timezone/data/latest_all.dart' as tz;
-import 'package:timezone/timezone.dart' as tz;
 
 enum Filters { tomou, remover }
 
@@ -60,23 +56,10 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       _isLoading = true;
     });
-    await requestPermissions();
     await getMedicamentos();
     setState(() {
       _isLoading = false;
     });
-  }
-
-  requestPermissions() async {
-    FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-        FlutterLocalNotificationsPlugin();
-    flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.requestNotificationsPermission();
-    if (await Permission.scheduleExactAlarm.isDenied) {
-      await Permission.scheduleExactAlarm.request();
-    }
   }
 
   getMedicamentos() async {
@@ -110,104 +93,6 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       _isLoading = false;
     });
-  }
-
-  Future<void> requestNotificationPermission() async {
-    final plugin = flutterLocalNotificationsPlugin;
-
-    if (await plugin
-            .resolvePlatformSpecificImplementation<
-                AndroidFlutterLocalNotificationsPlugin>()
-            ?.areNotificationsEnabled() ==
-        false) {
-      await plugin
-          .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin>()
-          ?.requestNotificationsPermission();
-      await plugin
-          .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin>()
-          ?.requestExactAlarmsPermission();
-    }
-  }
-
-  Future<void> createNotification() async {
-    await flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(channel);
-
-    tz.initializeTimeZones();
-    tz.setLocalLocation(tz.getLocation('America/Sao_Paulo'));
-    final tzDateTime = tz.TZDateTime.from(
-        DateTime.now().add(const Duration(minutes: 1)), tz.local);
-
-    try {
-      final now = DateTime.now();
-      print("Horário atual: $now");
-      print("Horário agendado: $tzDateTime");
-
-      int id = 1;
-      final prefs = await SharedPreferences.getInstance();
-      id = prefs.getInt('idNotification') ?? 1;
-      setState(() {
-        id++;
-      });
-      prefs.setInt('idNotification', id);
-      await flutterLocalNotificationsPlugin.zonedSchedule(
-        id,
-        "Testing schedule notification",
-        "This is a scheduled notification",
-        tzDateTime,
-        NotificationDetails(
-          android: AndroidNotificationDetails(
-            channel.id,
-            channel.name,
-            channelDescription: channel.description,
-            importance: Importance.high,
-            color: Colors.blue,
-            playSound: true,
-            icon: '@mipmap/ic_launcher',
-          ),
-        ),
-        uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime,
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      );
-
-      print("Notificação agendada com sucesso para $tzDateTime");
-    } catch (e) {
-      print("Erro ao agendar notificação: $e");
-    }
-
-    // flutterLocalNotificationsPlugin.show(
-    //     0,
-    //     "Testing",
-    //     "How you doin ?",
-    //     NotificationDetails(
-    //       android: AndroidNotificationDetails(channel.id, channel.name,
-    //           channelDescription: channel.description,
-    //           importance: Importance.high,
-    //           color: Colors.blue,
-    //           playSound: true,
-    //           icon: '@mipmap/ic_launcher'),
-    //     ),
-    //     payload: 'Open from Local Notification');
-  }
-
-  void listScheduledNotifications() async {
-    final List<PendingNotificationRequest> pendingNotifications =
-        await flutterLocalNotificationsPlugin.pendingNotificationRequests();
-
-    if (pendingNotifications.isNotEmpty) {
-      for (var notification in pendingNotifications) {
-        print("ID: ${notification.id}, "
-            "Título: ${notification.title}, "
-            "Corpo: ${notification.body}, ");
-      }
-    } else {
-      print("Nenhuma notificação agendada.");
-    }
   }
 
   @override
@@ -336,7 +221,6 @@ class _HomePageState extends State<HomePage> {
                                         final horas = int.parse(partes![0]);
                                         final minutos = int.parse(partes[1]);
 
-                                        // Somando o período ao horário atual
                                         final novaHora = agora.add(Duration(
                                             hours: horas, minutes: minutos));
 

@@ -1,40 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:memovida/interface/SplashPage.dart';
-
-const AndroidNotificationChannel channel = AndroidNotificationChannel(
-  'high_importance_channel', // ID do canal
-  'High Importance Notifications', // Nome do canal
-  description: 'This channel is used for important notifications.', // Descrição
-  importance: Importance.high,
-  showBadge: true, // Mostra o ícone na barra de status
-  enableLights: true, // Ativa luzes ao receber notificações
-  enableVibration: true, // Ativa vibração
-  playSound: true, // Ativa som
-);
-
-final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-    FlutterLocalNotificationsPlugin();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  await flutterLocalNotificationsPlugin
-      .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin>()
-      ?.createNotificationChannel(channel);
-
-  AndroidInitializationSettings initializationSettingsAndroid =
-      const AndroidInitializationSettings('@mipmap/ic_launcher');
-
-  InitializationSettings initializationSettings = InitializationSettings(
-    android: initializationSettingsAndroid,
-  );
-
-  flutterLocalNotificationsPlugin.initialize(
-    initializationSettings,
-  );
-
   runApp(App());
 }
 
